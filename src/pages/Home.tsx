@@ -17,14 +17,20 @@ const Home: React.FC = () => {
   
   const handleCreateChat = async () => {
     setLoading(true);
-    const securityCode = useSecurityCode ? generateSecurityCode() : undefined;
-    const room = await createRoom(securityCode); // Await the room creation
-    
-    setTimeout(() => {
-      navigate(`/chat/${room.id}`, { 
-        state: { securityCode: room.securityCode }
-      });
-    }, 500);
+    try {
+      const securityCode = useSecurityCode ? generateSecurityCode() : undefined;
+      const room = await createRoom(securityCode); // Await the room creation
+
+      setTimeout(() => {
+        navigate(`/chat/${room.id}`, { 
+          state: { securityCode: room.securityCode }
+        });
+      }, 500);
+    } catch (error) {
+      console.error('Failed to create chat room:', error);
+      alert('Failed to create chat room. Please try again.');
+      setLoading(false); // Reset loading state on failure
+    }
   };
   
   const handleJoinChat = () => {

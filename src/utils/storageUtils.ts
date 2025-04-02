@@ -100,16 +100,15 @@ export const createRoom = async (securityCode?: string): Promise<ChatRoom> => {
     }
 
     console.log(`Room successfully created in Supabase: ${roomId}`);
+    return room;
   } catch (err) {
     if (err.name === 'AbortError') {
       console.error('Supabase request timed out while creating room.');
     } else {
       console.error('Unexpected error creating room in Supabase:', err);
     }
-    throw err;
+    throw err; // Ensure the error is propagated to the caller
   }
-
-  return room;
 };
 
 export const getRoomSecurityCode = async (roomId: string): Promise<string | undefined> => {
