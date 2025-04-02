@@ -1,3 +1,5 @@
+import { ChatMessage } from "@/types"; // Import ChatMessage type
+
 export type Json =
   | string
   | number
@@ -9,7 +11,25 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never;
+      chat_rooms: {
+        Row: {
+          id: string;
+          messages: ChatMessage[];
+          lastActivity: number;
+          securityCode?: string;
+        };
+        Insert: {
+          id: string;
+          messages: ChatMessage[];
+          lastActivity: number;
+          securityCode?: string;
+        };
+        Update: {
+          messages?: ChatMessage[];
+          lastActivity?: number;
+          securityCode?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;

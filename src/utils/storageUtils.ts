@@ -40,7 +40,7 @@ export const getRoom = async (roomId: string): Promise<ChatRoom | null> => {
 
     // Attempt to fetch the room from Supabase
     const { data: room, error } = await supabase
-      .from('chat_rooms')
+      .from('chat_rooms') // Fixed type error by defining the table in Database type
       .select('*')
       .eq('id', roomId)
       .single();
@@ -90,7 +90,9 @@ export const createRoom = async (securityCode?: string): Promise<ChatRoom> => {
   };
 
   try {
-    const { error } = await supabase.from('chat_rooms').insert([room]);
+    const { error } = await supabase
+      .from('chat_rooms') // Fixed type error by defining the table in Database type
+      .insert([room]); // Ensure ChatRoom matches Supabase Insert type
     if (error) {
       console.error('Error creating room in Supabase:', error.message);
     } else {
@@ -104,13 +106,14 @@ export const createRoom = async (securityCode?: string): Promise<ChatRoom> => {
   return room;
 };
 
-export const getRoomSecurityCode = (roomId: string): string | undefined => {
-  const room = getRoom(roomId);
+// Fix async/await issues in getRoomSecurityCode and verifySecurityCode
+export const getRoomSecurityCode = async (roomId: string): Promise<string | undefined> => {
+  const room = await getRoom(roomId); // Added await
   return room?.securityCode;
 };
 
-export const verifySecurityCode = (roomId: string, code: string): boolean => {
-  const room = getRoom(roomId);
+export const verifySecurityCode = async (roomId: string, code: string): Promise<boolean> => {
+  const room = await getRoom(roomId); // Added await
   return room?.securityCode === code;
 };
 
