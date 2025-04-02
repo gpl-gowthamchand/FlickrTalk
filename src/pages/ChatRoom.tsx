@@ -41,7 +41,6 @@ const ChatRoom: React.FC = () => {
       }
 
       const roomData = await getRoom(roomId);
-      const roomSecurityCode = roomData?.securityCode;
 
       if (!roomData) {
         console.warn(`Room not found or expired: ${roomId}`);
@@ -51,14 +50,6 @@ const ChatRoom: React.FC = () => {
           variant: "destructive",
         });
         setNotFound(true);
-        setLoading(false);
-        return;
-      }
-
-      // Check if room requires security code
-      if (roomSecurityCode && !securityCode) {
-        console.info(`Room requires security code: ${roomId}`);
-        setRequiresCode(true);
         setLoading(false);
         return;
       }
@@ -87,7 +78,7 @@ const ChatRoom: React.FC = () => {
     };
 
     fetchRoom();
-  }, [roomId, navigate, securityCode, toast]);
+  }, [roomId, navigate, toast]);
 
   // Show loading state
   if (loading) {
