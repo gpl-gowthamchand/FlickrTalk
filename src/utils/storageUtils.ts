@@ -82,7 +82,17 @@ export const createRoom = async (securityCode?: string): Promise<ChatRoom> => {
 
   try {
     console.log(`Attempting to create room in Supabase: ${JSON.stringify(room)}`);
-    const { error } = await supabase.from('chat_rooms').insert([room]);
+
+    // Add a timeout for the Supabase request
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
+
+    const { error } = await supabase
+      .from('chat_rooms')
+      .insert([room], { returning: 'minimal' }) // Use minimal return to reduce response size
+      .abortSignal(controller.signal);
+
+    clearTimeout(timeout);
 
     if (error) {
       console.error('Error creating room in Supabase:', error.message);
@@ -91,7 +101,11 @@ export const createRoom = async (securityCode?: string): Promise<ChatRoom> => {
 
     console.log(`Room successfully created in Supabase: ${roomId}`);
   } catch (err) {
-    console.error('Unexpected error creating room in Supabase:', err);
+    if (err.name === 'AbortError') {
+      console.error('Supabase request timed out while creating room.');
+    } else {
+      console.error('Unexpected error creating room in Supabase:', err);
+    }
     throw err;
   }
 

@@ -25,6 +25,7 @@ const App = () => {
     testSupabaseConnection().then((success) => {
       if (!success) {
         console.error('Failed to connect to Supabase. Check your environment variables.');
+        alert('Unable to connect to the chat server. Please try again later.');
       }
     });
 
