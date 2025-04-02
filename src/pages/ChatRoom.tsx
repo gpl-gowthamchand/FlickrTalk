@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import ChatHeader from '@/components/ChatHeader';
@@ -35,6 +34,7 @@ const ChatRoom: React.FC = () => {
   // Effect to check for room existence and security code
   useEffect(() => {
     if (!roomId) {
+      console.error('No room ID provided. Redirecting to home.');
       navigate('/');
       return;
     }
@@ -43,10 +43,10 @@ const ChatRoom: React.FC = () => {
     const roomSecurityCode = getRoomSecurityCode(roomId);
     
     if (!roomData) {
-      console.log('Room not found:', roomId);
+      console.warn(`Room not found or expired: ${roomId}`);
       toast({
         title: "Chat room not found",
-        description: "This chat room doesn't exist or has expired after 24 hours of inactivity",
+        description: "This chat room doesn't exist or has expired after 24 hours of inactivity.",
         variant: "destructive",
       });
       setNotFound(true);
@@ -56,11 +56,13 @@ const ChatRoom: React.FC = () => {
     
     // Check if room requires security code
     if (roomSecurityCode && !securityCode) {
+      console.info(`Room requires security code: ${roomId}`);
       setRequiresCode(true);
       setLoading(false);
       return;
     }
     
+    console.log(`Room loaded successfully: ${roomId}`);
     setRoom(roomData);
     setLoading(false);
     
@@ -70,10 +72,10 @@ const ChatRoom: React.FC = () => {
       if (updatedRoom) {
         setRoom(updatedRoom);
       } else {
-        // Room expired during session
+        console.warn(`Room expired during session: ${roomId}`);
         toast({
           title: "Chat room expired",
-          description: "This chat room has expired due to inactivity",
+          description: "This chat room has expired due to inactivity.",
         });
         clearInterval(interval);
         navigate('/');

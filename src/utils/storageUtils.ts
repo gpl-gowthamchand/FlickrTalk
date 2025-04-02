@@ -1,4 +1,3 @@
-
 import { ChatMessage, ChatRoom } from "@/types";
 
 const CHAT_STORAGE_PREFIX = 'flickr_talk_room_';
@@ -26,7 +25,7 @@ export const getRoom = (roomId: string): ChatRoom | null => {
     const roomData = localStorage.getItem(`${CHAT_STORAGE_PREFIX}${roomId}`);
     
     if (!roomData) {
-      console.log(`Room not found: ${roomId}`);
+      console.warn(`Room not found in localStorage: ${roomId}`);
       return null;
     }
     
@@ -34,14 +33,14 @@ export const getRoom = (roomId: string): ChatRoom | null => {
     
     // Check if room has expired
     if (Date.now() - room.lastActivity > CHAT_EXPIRY_TIME) {
-      console.log(`Room expired: ${roomId}`);
+      console.warn(`Room expired: ${roomId}`);
       localStorage.removeItem(`${CHAT_STORAGE_PREFIX}${roomId}`);
       return null;
     }
     
     return room;
   } catch (error) {
-    console.error('Error retrieving chat room:', error);
+    console.error(`Error retrieving chat room (${roomId}):`, error);
     return null;
   }
 };
