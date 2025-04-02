@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
@@ -16,10 +15,10 @@ const Home: React.FC = () => {
   const [roomId, setRoomId] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const handleCreateChat = () => {
+  const handleCreateChat = async () => {
     setLoading(true);
     const securityCode = useSecurityCode ? generateSecurityCode() : undefined;
-    const room = createRoom(securityCode);
+    const room = await createRoom(securityCode); // Await the room creation
     
     setTimeout(() => {
       navigate(`/chat/${room.id}`, { 
