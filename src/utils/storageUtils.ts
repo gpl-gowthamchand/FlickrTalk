@@ -89,13 +89,16 @@ export const createRoom = async (securityCode?: string): Promise<ChatRoom> => {
 
     const { error } = await supabase
       .from('chat_rooms')
-      .insert([room]) // Removed the 'returning' option
+      .insert([room])
       .abortSignal(controller.signal);
 
     clearTimeout(timeout);
 
     if (error) {
-      console.error('Error creating room in Supabase:', error.message);
+      console.error('Error creating room in Supabase:', error.message, {
+        details: error.details,
+        hint: error.hint,
+      });
       throw new Error('Failed to create room in Supabase');
     }
 
@@ -105,7 +108,7 @@ export const createRoom = async (securityCode?: string): Promise<ChatRoom> => {
     if (err.name === 'AbortError') {
       console.error('Supabase request timed out while creating room.');
     } else {
-      console.error('Unexpected error creating room in Supabase:', err);
+      console.error('Unexpected error creating room in Supabase:', err.message || err);
     }
     throw err; // Ensure the error is propagated to the caller
   }
