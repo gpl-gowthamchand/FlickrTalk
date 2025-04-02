@@ -16,11 +16,17 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
 
 export async function testSupabaseConnection() {
   try {
+    console.log('Testing Supabase connection...');
+    console.log('Supabase URL:', SUPABASE_URL);
+    console.log('Supabase Key:', SUPABASE_PUBLISHABLE_KEY ? 'Provided' : 'Not Provided');
+
     const { data, error } = await supabase.rpc('now');
+
     if (error) {
       console.error('Supabase connection test failed:', error.message);
       return false;
     }
+
     console.log('Supabase connection successful. Current time:', data);
     return true;
   } catch (err) {
