@@ -29,6 +29,7 @@ export const storeRoom = async (roomId: string, room: ChatRoom): Promise<void> =
 
 export const getRoom = async (roomId: string): Promise<ChatRoom | null> => {
   try {
+    console.log(`Fetching room from Supabase: ${roomId}`);
     const { data: room, error } = await supabase
       .from('chat_rooms')
       .select('*')
@@ -47,7 +48,7 @@ export const getRoom = async (roomId: string): Promise<ChatRoom | null> => {
       return null;
     }
 
-    console.log(`Room found in Supabase: ${roomId}`);
+    console.log(`Room successfully fetched from Supabase: ${JSON.stringify(room)}`);
     return room as ChatRoom;
   } catch (error) {
     console.error(`Error retrieving chat room (${roomId}):`, error);
@@ -80,14 +81,18 @@ export const createRoom = async (securityCode?: string): Promise<ChatRoom> => {
   };
 
   try {
+    console.log(`Attempting to create room in Supabase: ${JSON.stringify(room)}`);
     const { error } = await supabase.from('chat_rooms').insert([room]);
+
     if (error) {
       console.error('Error creating room in Supabase:', error.message);
-    } else {
-      console.log(`New room created in Supabase: ${roomId}`);
+      throw new Error('Failed to create room in Supabase');
     }
+
+    console.log(`Room successfully created in Supabase: ${roomId}`);
   } catch (err) {
     console.error('Unexpected error creating room in Supabase:', err);
+    throw err;
   }
 
   return room;
