@@ -1,4 +1,5 @@
 import { ChatMessage, ChatRoom } from "@/types";
+import { supabase } from "@/integrations/supabase/client";
 
 const CHAT_STORAGE_PREFIX = 'flickr_talk_room_';
 const CHAT_EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 hours
@@ -63,17 +64,27 @@ export const addMessage = (roomId: string, message: ChatMessage): ChatRoom => {
   return room;
 };
 
-export const createRoom = (securityCode?: string): ChatRoom => {
+export const createRoom = async (securityCode?: string): Promise<ChatRoom> => {
   const roomId = generateRoomId();
   const room: ChatRoom = {
     id: roomId,
     messages: [],
     lastActivity: Date.now(),
-    securityCode
+    securityCode,
   };
-  
-  storeRoom(roomId, room);
-  console.log(`New room created: ${roomId}`);
+
+  try {
+    const { error } = await supabase.from('chat_rooms').insert([room]);
+    if (error) {
+      console.error('Error creating room in Supabase:', error.message);
+    } else {
+      console.log(`New room created in Supabase: ${roomId}`);
+    }
+  } catch (err) {
+    console.error('Unexpected error creating room in Supabase:', err);
+  }
+
+  storeRoom(roomId, room); // Fallback to localStorage
   return room;
 };
 

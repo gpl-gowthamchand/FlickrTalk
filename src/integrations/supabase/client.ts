@@ -24,7 +24,7 @@ export async function testSupabaseConnection() {
     console.log('Supabase connection successful. Current time:', data);
     return true;
   } catch (err) {
-    console.error('Error testing Supabase connection:', err);
+    console.error('Error testing Supabase connection:', err.message || err);
     return false;
   }
 }

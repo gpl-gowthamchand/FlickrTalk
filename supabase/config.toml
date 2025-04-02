@@ -1,1 +1,1 @@
-project_id = "hgisakurzmekpejenzzj"
+project_id = "hgisakurzmekpejenzzj" // Ensure this matches VITE_SUPABASE_URL

@@ -33,56 +33,60 @@ const ChatRoom: React.FC = () => {
 
   // Effect to check for room existence and security code
   useEffect(() => {
-    if (!roomId) {
-      console.error('No room ID provided. Redirecting to home.');
-      navigate('/');
-      return;
-    }
-    
-    const roomData = getRoom(roomId);
-    const roomSecurityCode = getRoomSecurityCode(roomId);
-    
-    if (!roomData) {
-      console.warn(`Room not found or expired: ${roomId}`);
-      toast({
-        title: "Chat room not found",
-        description: "This chat room doesn't exist or has expired after 24 hours of inactivity.",
-        variant: "destructive",
-      });
-      setNotFound(true);
-      setLoading(false);
-      return;
-    }
-    
-    // Check if room requires security code
-    if (roomSecurityCode && !securityCode) {
-      console.info(`Room requires security code: ${roomId}`);
-      setRequiresCode(true);
-      setLoading(false);
-      return;
-    }
-    
-    console.log(`Room loaded successfully: ${roomId}`);
-    setRoom(roomData);
-    setLoading(false);
-    
-    // Set up polling to check for new messages
-    const interval = setInterval(() => {
-      const updatedRoom = getRoom(roomId);
-      if (updatedRoom) {
-        setRoom(updatedRoom);
-      } else {
-        console.warn(`Room expired during session: ${roomId}`);
-        toast({
-          title: "Chat room expired",
-          description: "This chat room has expired due to inactivity.",
-        });
-        clearInterval(interval);
+    const fetchRoom = async () => {
+      if (!roomId) {
+        console.error('No room ID provided. Redirecting to home.');
         navigate('/');
+        return;
       }
-    }, 2000);
-    
-    return () => clearInterval(interval);
+
+      const roomData = await getRoom(roomId);
+      const roomSecurityCode = roomData?.securityCode;
+
+      if (!roomData) {
+        console.warn(`Room not found or expired: ${roomId}`);
+        toast({
+          title: "Chat room not found",
+          description: "This chat room doesn't exist or has expired after 24 hours of inactivity.",
+          variant: "destructive",
+        });
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+
+      // Check if room requires security code
+      if (roomSecurityCode && !securityCode) {
+        console.info(`Room requires security code: ${roomId}`);
+        setRequiresCode(true);
+        setLoading(false);
+        return;
+      }
+
+      console.log(`Room loaded successfully: ${roomId}`);
+      setRoom(roomData);
+      setLoading(false);
+
+      // Set up polling to check for new messages
+      const interval = setInterval(async () => {
+        const updatedRoom = await getRoom(roomId);
+        if (updatedRoom) {
+          setRoom(updatedRoom);
+        } else {
+          console.warn(`Room expired during session: ${roomId}`);
+          toast({
+            title: "Chat room expired",
+            description: "This chat room has expired due to inactivity.",
+          });
+          clearInterval(interval);
+          navigate('/');
+        }
+      }, 2000);
+
+      return () => clearInterval(interval);
+    };
+
+    fetchRoom();
   }, [roomId, navigate, securityCode, toast]);
 
   // Show loading state
