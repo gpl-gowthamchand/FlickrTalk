@@ -2,10 +2,29 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = "https://hgisakurzmekpejenzzj.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhnaXNha3Vyem1la3BlamVuenpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM1OTIwNzksImV4cCI6MjA1OTE2ODA3OX0.NNuHIVMHny1YE7DLskdJZc3u9LEuhTBc9onW_7e9OsA";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+  throw new Error('Supabase environment variables are not set.');
+}
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+export async function testSupabaseConnection() {
+  try {
+    const { data, error } = await supabase.rpc('now');
+    if (error) {
+      console.error('Supabase connection test failed:', error.message);
+      return false;
+    }
+    console.log('Supabase connection successful. Current time:', data);
+    return true;
+  } catch (err) {
+    console.error('Error testing Supabase connection:', err);
+    return false;
+  }
+}
