@@ -21,25 +21,41 @@ export const storeRoom = (roomId: string, room: ChatRoom): void => {
   }
 };
 
-export const getRoom = (roomId: string): ChatRoom | null => {
+export const getRoom = async (roomId: string): Promise<ChatRoom | null> => {
   try {
     const roomData = localStorage.getItem(`${CHAT_STORAGE_PREFIX}${roomId}`);
     
-    if (!roomData) {
-      console.warn(`Room not found in localStorage: ${roomId}`);
+    if (roomData) {
+      const room = JSON.parse(roomData) as ChatRoom;
+      
+      // Check if room has expired
+      if (Date.now() - room.lastActivity > CHAT_EXPIRY_TIME) {
+        console.warn(`Room expired: ${roomId}`);
+        localStorage.removeItem(`${CHAT_STORAGE_PREFIX}${roomId}`);
+        return null;
+      }
+      
+      return room;
+    }
+
+    // Attempt to fetch the room from Supabase
+    const { data: room, error } = await supabase
+      .from('chat_rooms')
+      .select('*')
+      .eq('id', roomId)
+      .single();
+
+    if (error) {
+      console.warn(`Room not found in Supabase: ${roomId}`, error.message);
       return null;
     }
-    
-    const room = JSON.parse(roomData) as ChatRoom;
-    
-    // Check if room has expired
-    if (Date.now() - room.lastActivity > CHAT_EXPIRY_TIME) {
-      console.warn(`Room expired: ${roomId}`);
-      localStorage.removeItem(`${CHAT_STORAGE_PREFIX}${roomId}`);
-      return null;
+
+    // Store the room in localStorage for fallback
+    if (room) {
+      localStorage.setItem(`${CHAT_STORAGE_PREFIX}${roomId}`, JSON.stringify(room));
     }
-    
-    return room;
+
+    return room as ChatRoom;
   } catch (error) {
     console.error(`Error retrieving chat room (${roomId}):`, error);
     return null;
