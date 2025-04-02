@@ -89,7 +89,7 @@ export const createRoom = async (securityCode?: string): Promise<ChatRoom> => {
 
     const { error } = await supabase
       .from('chat_rooms')
-      .insert([room], { returning: 'minimal' }) // Use minimal return to reduce response size
+      .insert([room]) // Removed the 'returning' option
       .abortSignal(controller.signal);
 
     clearTimeout(timeout);
