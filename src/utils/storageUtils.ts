@@ -62,9 +62,9 @@ export const getRoom = async (roomId: string): Promise<ChatRoom | null> => {
   }
 };
 
-export const addMessage = (roomId: string, message: ChatMessage): ChatRoom => {
-  let room = getRoom(roomId);
-  
+export const addMessage = async (roomId: string, message: ChatMessage): Promise<ChatRoom | null> => {
+  let room = await getRoom(roomId); // Await the asynchronous call
+
   if (!room) {
     room = {
       id: roomId,
@@ -72,10 +72,10 @@ export const addMessage = (roomId: string, message: ChatMessage): ChatRoom => {
       lastActivity: Date.now(),
     };
   }
-  
+
   room.messages.push(message);
   room.lastActivity = Date.now();
-  
+
   storeRoom(roomId, room);
   return room;
 };

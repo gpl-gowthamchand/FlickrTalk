@@ -23,11 +23,11 @@ const ChatRoom: React.FC = () => {
   const securityCode = location.state?.securityCode;
   
   // Handle messages
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = async (content: string) => {
     if (!roomId || !room) return;
     
     const message = generateMessage(content, 'user');
-    const updatedRoom = addMessage(roomId, message);
+    const updatedRoom = await addMessage(roomId, message); // Await the asynchronous call
     setRoom(updatedRoom);
   };
 
