@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -53,17 +52,6 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				flickr: {
-					100: '#EBF4FF',
-					200: '#C3DAFE',
-					300: '#A3BFFA',
-					400: '#7F9CF5',
-					500: '#667EEA',
-					600: '#5A67D8',
-					700: '#4C51BF',
-					800: '#434190',
-					900: '#3C366B',
-				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -96,35 +84,12 @@ export default {
 					to: {
 						height: '0'
 					}
-				},
-				'fade-in': {
-					'0%': { opacity: '0' },
-					'100%': { opacity: '1' }
-				},
-				'fade-out': {
-					'0%': { opacity: '1' },
-					'100%': { opacity: '0' }
-				},
-				'slide-in': {
-					'0%': { transform: 'translateY(10px)', opacity: '0' },
-					'100%': { transform: 'translateY(0)', opacity: '1' }
-				},
-				'pulse-light': {
-					'0%, 100%': { opacity: '1' },
-					'50%': { opacity: '0.7' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out',
-				'fade-in': 'fade-in 0.3s ease-out',
-				'fade-out': 'fade-out 0.3s ease-out',
-				'slide-in': 'slide-in 0.4s ease-out',
-				'pulse-light': 'pulse-light 2s infinite'
-			},
-			fontFamily: {
-				sans: ['Inter', 'sans-serif'],
-			},
+				'accordion-up': 'accordion-up 0.2s ease-out'
+			}
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
