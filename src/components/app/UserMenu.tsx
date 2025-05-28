@@ -36,8 +36,8 @@ export const UserMenu = memo(({ profileName, onProfileNameChange }: UserMenuProp
     alert(
       "Developer: G P L Gowtham chang\n" +
       "GitHub: https://github.com/gpl-gowthamchand\n" +
-      "Website: https://gpl.gowthamchand@gmail.com\n" +
-      "Email: https://gowthamchand.vercel.app/\n" +
+      "Website: https://gowthamchand.vercel.app/\n" +
+      "Email: https://gpl.gowthamchand@gmail.com/\n" +
       "© " + new Date().getFullYear() + " All rights reserved"
     );
   }, []);
