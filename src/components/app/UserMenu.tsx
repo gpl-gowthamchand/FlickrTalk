@@ -34,7 +34,7 @@ export const UserMenu = memo(({ profileName, onProfileNameChange }: UserMenuProp
   const handleAboutDialog = useCallback(() => {
     // Simple alert instead of dialog to show developer info
     alert(
-      "Developer: G P L Gowtham chang\n" +
+      "Developer: G P L Gowtham chand\n" +
       "GitHub: https://github.com/gpl-gowthamchand\n" +
       "Website: https://gowthamchand.vercel.app/\n" +
       "Email: https://gpl.gowthamchand@gmail.com/\n" +
