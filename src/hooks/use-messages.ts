@@ -160,42 +160,74 @@ export const useMessages = (roomId: string | null, displayName: string) => {
     
     console.log("Setting up real-time subscription for room:", roomId);
     
+    // Create a more specific channel for this room
+    const channelName = `room-${roomId}-messages`;
+    console.log("Creating channel:", channelName);
+    
     // Subscribe to real-time updates for messages
     const subscription = supabase
-      .channel(`messages-${roomId}`)
+      .channel(channelName)
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
-        table: 'messages'
+        table: 'messages',
+        filter: `room_id=eq.${roomId}`
       }, (payload) => {
-        console.log("Received real-time message:", payload);
+        console.log("🎯 REAL-TIME EVENT RECEIVED for room:", roomId, payload);
         
-        // Only process messages for the current room
-        if (payload.new && payload.new.room_id === roomId) {
-          // Skip messages sent by the current user (already in state)
+        if (payload.new) {
+          const newMessage: Message = {
+            id: payload.new.id,
+            content: payload.new.content,
+            sender: payload.new.sender,
+            isMine: payload.new.sender === displayName,
+            timestamp: new Date(payload.new.timestamp),
+          };
+          
+          // Only add messages from other users (avoid duplicates)
           if (payload.new.sender !== displayName) {
-            const newMessage: Message = {
-              id: payload.new.id,
-              content: payload.new.content,
-              sender: payload.new.sender,
-              isMine: false,
-              timestamp: new Date(payload.new.timestamp),
-            };
-            
-            console.log("Adding new message from other user:", newMessage);
-            setMessages((prev) => [...prev, newMessage]);
+            console.log("✅ Adding new message from other user:", newMessage);
+            setMessages((prev) => {
+              // Check if message already exists to avoid duplicates
+              const exists = prev.some(msg => msg.id === newMessage.id);
+              if (exists) {
+                console.log("⚠️ Message already exists, skipping");
+                return prev;
+              }
+              console.log("🆕 Adding message to state, total messages:", prev.length + 1);
+              return [...prev, newMessage];
+            });
           } else {
-            console.log("Skipping own message in real-time update");
+            console.log("🔄 Skipping own message in real-time update");
           }
         }
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log("📡 Subscription status for room", roomId, ":", status);
+        
+        if (status === 'SUBSCRIBED') {
+          console.log("✅ Real-time subscription active for room:", roomId);
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error("❌ Real-time subscription failed for room:", roomId);
+        } else if (status === 'TIMED_OUT') {
+          console.warn("⏰ Real-time subscription timed out for room:", roomId);
+        }
+      });
+
+    // Set up a fallback polling mechanism every 3 seconds
+    const pollInterval = setInterval(() => {
+      if (roomId) {
+        console.log("🔄 Polling for new messages in room:", roomId);
+        loadMessages(roomId);
+      }
+    }, 3000);
 
     return () => {
-      console.log("Cleaning up subscription for room:", roomId);
+      console.log("🧹 Cleaning up subscription and polling for room:", roomId);
       supabase.removeChannel(subscription);
+      clearInterval(pollInterval);
     };
-  }, [roomId, displayName]);
+  }, [roomId, displayName, loadMessages]);
 
   return {
     messages,
