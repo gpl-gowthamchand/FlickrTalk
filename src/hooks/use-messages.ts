@@ -41,7 +41,7 @@ export const useMessages = (roomId: string | null, displayName: string) => {
           sender: msg.sender,
           isMine: msg.sender === displayName,
           timestamp: new Date(msg.timestamp),
-          isSystemMessage: msg.is_system_message || false,
+          isSystemMessage: msg.is_system_message || msg.sender === "System",
         }));
         
         console.log("Formatted messages for display:", formattedMessages);
@@ -183,7 +183,7 @@ export const useMessages = (roomId: string | null, displayName: string) => {
             sender: payload.new.sender,
             isMine: payload.new.sender === displayName,
             timestamp: new Date(payload.new.timestamp),
-            isSystemMessage: payload.new.is_system_message || false,
+            isSystemMessage: payload.new.is_system_message || payload.new.sender === "System",
           };
           
           // Only add messages from other users (avoid duplicates)

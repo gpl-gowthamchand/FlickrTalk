@@ -15,40 +15,61 @@ export const useRoom = () => {
 
   // Update display name with notification to other users
   const updateDisplayName = (newName: string) => {
+    console.log("🔄 updateDisplayName called:", { newName, currentName: displayName, roomId });
+    
     if (newName.trim() && newName !== displayName) {
       const oldName = displayName;
+      console.log("📝 Name change detected:", { oldName, newName });
+      
       setPreviousDisplayName(oldName);
       setDisplayName(newName);
       
       // If we're in a room, notify other users about the name change
       if (roomId && oldName) {
+        console.log("📢 Sending name change notification for room:", roomId);
         notifyNameChange(oldName, newName);
+      } else {
+        console.log("⚠️ Not sending notification - no room or old name:", { roomId, oldName });
       }
+    } else {
+      console.log("⏭️ Skipping name update - no change or empty name");
     }
   };
 
   // Notify other users about name change
   const notifyNameChange = async (oldName: string, newName: string) => {
-    if (!roomId) return;
+    if (!roomId) {
+      console.log("❌ No room ID for name change notification");
+      return;
+    }
+    
+    console.log("📤 Sending name change notification:", { oldName, newName, roomId });
     
     try {
       // Send a system message about the name change
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("messages")
         .insert({
           room_id: roomId,
           content: `**${oldName}** changed their name to **${newName}**`,
-          sender: "System",
-          is_system_message: true
-        });
+          sender: "System"
+          // Temporarily removed is_system_message to test basic functionality
+        })
+        .select();
         
       if (error) {
-        console.error("Error sending name change notification:", error);
+        console.error("❌ Error sending name change notification:", error);
+        console.error("Error details:", {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
       } else {
-        console.log("Name change notification sent:", { oldName, newName });
+        console.log("✅ Name change notification sent successfully:", data);
       }
     } catch (error) {
-      console.error("Failed to send name change notification:", error);
+      console.error("💥 Failed to send name change notification:", error);
     }
   };
 
