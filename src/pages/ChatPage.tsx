@@ -34,20 +34,25 @@ const ChatPage = () => {
       return;
     }
     
-    // If we have URL parameters but no matching room context, show join dialog
-    if (roomId && securityCode && (!contextRoomId || contextRoomId !== roomId)) {
-      console.log("Need to join room with URL parameters");
+    // If we have a room ID in URL but no room context, we need to join
+    if (roomId && !contextRoomId) {
+      console.log("Room ID in URL but no room context, showing join dialog");
       setShowJoinDialog(true);
-    } 
+      return;
+    }
+    
     // If we have a room context but it doesn't match the URL, we need to rejoin
-    else if (contextRoomId && contextRoomId !== roomId) {
+    if (contextRoomId && contextRoomId !== roomId) {
       console.log("Room context mismatch, need to rejoin");
       setShowJoinDialog(true);
+      return;
     }
-    // If no room context and no URL parameters, show join dialog
-    else if (!contextRoomId && !roomId) {
-      console.log("No room context or URL, showing join dialog");
+    
+    // If no room context and no room ID, show join dialog
+    if (!contextRoomId && !roomId) {
+      console.log("No room context or room ID, showing join dialog");
       setShowJoinDialog(true);
+      return;
     }
     
     return () => {
@@ -83,6 +88,7 @@ const ChatPage = () => {
         onOpenChange={setShowJoinDialog}
         onJoin={handleJoin}
         initialCode={securityCode}
+        roomId={roomId}
       />
     </div>
   );

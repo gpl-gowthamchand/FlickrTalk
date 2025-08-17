@@ -16,9 +16,10 @@ interface JoinDialogProps {
   onOpenChange: (open: boolean) => void;
   onJoin: (name: string, code: string) => void;
   initialCode?: string | null;
+  roomId?: string | null;
 }
 
-export const JoinDialog = ({ open, onOpenChange, onJoin, initialCode = "" }: JoinDialogProps) => {
+export const JoinDialog = ({ open, onOpenChange, onJoin, initialCode = "", roomId }: JoinDialogProps) => {
   const [nameInput, setNameInput] = useState("");
   const [codeInput, setCodeInput] = useState(initialCode || "");
 
@@ -39,7 +40,15 @@ export const JoinDialog = ({ open, onOpenChange, onJoin, initialCode = "" }: Joi
         <DialogHeader>
           <DialogTitle>Join Chat Room</DialogTitle>
           <DialogDescription>
-            Enter your display name and security code to join this chat room.
+            {roomId ? (
+              <>
+                Joining room: <span className="font-mono font-bold">{roomId}</span>
+                <br />
+                Enter your display name and security code to join.
+              </>
+            ) : (
+              "Enter your display name and security code to join this chat room."
+            )}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">

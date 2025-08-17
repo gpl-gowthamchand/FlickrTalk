@@ -33,8 +33,8 @@ export const useMessages = (roomId: string | null, displayName: string) => {
         return;
       }
       
-      console.log("Loaded messages:", data);
-      if (data) {
+      console.log("Loaded messages from database:", data);
+      if (data && data.length > 0) {
         const formattedMessages: Message[] = data.map((msg: DbMessage) => ({
           id: msg.id,
           content: msg.content,
@@ -43,7 +43,11 @@ export const useMessages = (roomId: string | null, displayName: string) => {
           timestamp: new Date(msg.timestamp),
         }));
         
+        console.log("Formatted messages for display:", formattedMessages);
         setMessages(formattedMessages);
+      } else {
+        console.log("No previous messages found for room:", roomId);
+        setMessages([]);
       }
     } catch (error) {
       console.error("Unexpected error loading messages:", error);
@@ -158,25 +162,31 @@ export const useMessages = (roomId: string | null, displayName: string) => {
     
     // Subscribe to real-time updates for messages
     const subscription = supabase
-      .channel(`public:messages:room_id=eq.${roomId}`)
+      .channel(`messages-${roomId}`)
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
-        table: 'messages',
-        filter: `room_id=eq.${roomId}`
+        table: 'messages'
       }, (payload) => {
         console.log("Received real-time message:", payload);
-        // Skip messages sent by the current user (already in state)
-        if (payload.new && payload.new.sender !== displayName) {
-          const newMessage: Message = {
-            id: payload.new.id,
-            content: payload.new.content,
-            sender: payload.new.sender,
-            isMine: false,
-            timestamp: new Date(payload.new.timestamp),
-          };
-          
-          setMessages((prev) => [...prev, newMessage]);
+        
+        // Only process messages for the current room
+        if (payload.new && payload.new.room_id === roomId) {
+          // Skip messages sent by the current user (already in state)
+          if (payload.new.sender !== displayName) {
+            const newMessage: Message = {
+              id: payload.new.id,
+              content: payload.new.content,
+              sender: payload.new.sender,
+              isMine: false,
+              timestamp: new Date(payload.new.timestamp),
+            };
+            
+            console.log("Adding new message from other user:", newMessage);
+            setMessages((prev) => [...prev, newMessage]);
+          } else {
+            console.log("Skipping own message in real-time update");
+          }
         }
       })
       .subscribe();
