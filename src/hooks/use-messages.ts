@@ -8,6 +8,11 @@ export const useMessages = (roomId: string | null, displayName: string) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const { toast } = useToast();
 
+  // Debug logging
+  useEffect(() => {
+    console.log("useMessages hook - roomId:", roomId, "displayName:", displayName);
+  }, [roomId, displayName]);
+
   // Load previous messages
   const loadMessages = useCallback(async (roomId: string) => {
     try {
@@ -47,7 +52,39 @@ export const useMessages = (roomId: string | null, displayName: string) => {
 
   // Send a message
   const sendMessage = useCallback(async (content: string) => {
-    if (!content.trim() || !roomId) return;
+    if (!content.trim() || !roomId) {
+      console.log("sendMessage validation failed:", { content: content.trim(), roomId });
+      toast({
+        variant: "destructive",
+        title: "Cannot send message",
+        description: "You are not in a chat room. Please join a room first.",
+      });
+      return;
+    }
+    
+    console.log("Attempting to send message:", { content, roomId, displayName });
+    
+    // Verify we're still in the room
+    try {
+      const { data: roomData, error: roomError } = await supabase
+        .from("chat_rooms")
+        .select("id")
+        .eq("id", roomId)
+        .single();
+        
+      if (roomError || !roomData) {
+        console.error("Room verification failed for message sending:", roomError);
+        toast({
+          variant: "destructive",
+          title: "Room not found",
+          description: "The chat room no longer exists. Please return to the home page.",
+        });
+        return;
+      }
+    } catch (error) {
+      console.error("Error verifying room for message sending:", error);
+      return;
+    }
     
     const newMessage: Message = {
       id: crypto.randomUUID(),
@@ -62,25 +99,39 @@ export const useMessages = (roomId: string | null, displayName: string) => {
     
     // Store message in the database
     try {
-      const { error } = await supabase
+      console.log("Inserting message into database:", {
+        room_id: roomId,
+        content,
+        sender: displayName,
+      });
+      
+      const { data, error } = await supabase
         .from("messages")
         .insert({
           room_id: roomId,
           content,
           sender: displayName,
-        });
+        })
+        .select();
         
       if (error) {
-        console.error("Error sending message:", error);
+        console.error("Supabase error sending message:", error);
+        console.error("Error details:", {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        
         toast({
           variant: "destructive",
           title: "Message not sent",
-          description: "Could not send message. Please try again.",
+          description: `Database error: ${error.message}`,
         });
         // Remove the optimistic message if it failed
         setMessages((prev) => prev.filter(msg => msg.id !== newMessage.id));
       } else {
-        console.log("Message sent successfully to database");
+        console.log("Message sent successfully to database:", data);
       }
     } catch (error) {
       console.error("Unexpected error sending message:", error);

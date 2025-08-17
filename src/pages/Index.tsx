@@ -63,8 +63,10 @@ const Index = () => {
     if (!createdRoomData || !createName.trim()) return;
     
     try {
+      console.log("Joining created room:", createdRoomData);
       // Join the room first
       await joinRoom(createdRoomData.roomId, createdRoomData.securityCode, createName);
+      console.log("Room joined successfully, navigating to chat");
       // Then navigate after the room is joined
       navigate(`/chat/${createdRoomData.roomId}`);
     } catch (error) {
@@ -76,8 +78,10 @@ const Index = () => {
     if (!joinName.trim() || !joinRoomId.trim() || !joinSecurityCode.trim()) return;
     
     try {
+      console.log("Joining existing room:", { joinRoomId, joinSecurityCode, joinName });
       // Join the room first
       await joinRoom(joinRoomId, joinSecurityCode, joinName);
+      console.log("Room joined successfully, navigating to chat");
       // Then navigate after the room is joined
       navigate(`/chat/${joinRoomId}`);
     } catch (error) {
