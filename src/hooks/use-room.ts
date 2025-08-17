@@ -18,21 +18,36 @@ export const useRoom = () => {
     const newSecurityCode = generateRandomString(6);
     
     try {
-      // Create the room in the database
-      const { error } = await supabase
+      console.log("Attempting to create room:", { roomId: newRoomId, securityCode: newSecurityCode });
+      
+      // Create the room in the database - using current schema
+      const { data, error } = await supabase
         .from("chat_rooms")
-        .insert({ room_id: newRoomId, security_code: newSecurityCode });
+        .insert({ 
+          id: newRoomId, 
+          security_code: newSecurityCode,
+          last_activity: new Date().toISOString()
+        })
+        .select();
         
       if (error) {
-        console.error("Error creating room:", error);
+        console.error("Supabase error creating room:", error);
         toast({
           variant: "destructive",
           title: "Room Creation Failed",
-          description: "Could not create chat room. Please try again.",
+          description: `Database error: ${error.message}`,
         });
-        // Try again with a different ID
-        return createRoom();
+        
+        // If it's a duplicate key error, try again
+        if (error.code === '23505') {
+          console.log("Duplicate room ID, trying again...");
+          return createRoom();
+        }
+        
+        throw error;
       }
+      
+      console.log("Room created successfully:", data);
       
       toast({
         title: "Room Created",

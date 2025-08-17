@@ -13,20 +13,20 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          room_id: string
-          security_code: string
+          last_activity: string
+          security_code: string | null
         }
         Insert: {
           created_at?: string
-          id?: string
-          room_id: string
-          security_code: string
+          id: string
+          last_activity?: string
+          security_code: string | null
         }
         Update: {
           created_at?: string
           id?: string
-          room_id?: string
-          security_code?: string
+          last_activity?: string
+          security_code?: string | null
         }
         Relationships: []
       }
@@ -56,9 +56,8 @@ export type Database = {
           {
             foreignKeyName: "messages_room_id_fkey"
             columns: ["room_id"]
-            isOneToOne: false
             referencedRelation: "chat_rooms"
-            referencedColumns: ["room_id"]
+            referencedColumns: ["id"]
           },
         ]
       }
