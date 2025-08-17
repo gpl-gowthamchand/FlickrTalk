@@ -68,10 +68,49 @@ export const useRoom = () => {
 
   // Join a chat room
   const joinRoom = (roomId: string, securityCode: string, name: string) => {
-    setDisplayName(name);
-    setRoomId(roomId);
-    setSecurityCode(securityCode);
-    connectToRoom(roomId, securityCode, name);
+    console.log("Joining room:", { roomId, securityCode, name });
+    
+    // Verify the room exists and security code is correct
+    const verifyRoom = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("chat_rooms")
+          .select("*")
+          .eq("id", roomId)
+          .eq("security_code", securityCode)
+          .single();
+          
+        if (error || !data) {
+          console.error("Room verification failed:", error);
+          toast({
+            variant: "destructive",
+            title: "Invalid Room",
+            description: "Room ID or security code is incorrect.",
+          });
+          return false;
+        }
+        
+        console.log("Room verified successfully:", data);
+        return true;
+      } catch (error) {
+        console.error("Error verifying room:", error);
+        return false;
+      }
+    };
+    
+    verifyRoom().then((isValid) => {
+      if (isValid) {
+        setDisplayName(name);
+        setRoomId(roomId);
+        setSecurityCode(securityCode);
+        connectToRoom(roomId, securityCode, name);
+        
+        toast({
+          title: "Room Joined",
+          description: `Welcome to the chat room!`,
+        });
+      }
+    });
   };
   
   // Leave the current room

@@ -25,20 +25,29 @@ const ChatPage = () => {
   const [showJoinDialog, setShowJoinDialog] = useState(false);
 
   useEffect(() => {
+    console.log("ChatPage useEffect - roomId:", roomId, "securityCode:", securityCode, "contextRoomId:", contextRoomId);
+    
     // Auto-join if we have URL parameters
     if (roomId && securityCode && !contextRoomId) {
+      console.log("Auto-joining room with URL parameters");
       setShowJoinDialog(true);
     } else if (!contextRoomId) {
+      console.log("No room context, showing join dialog");
       setShowJoinDialog(true);
+    } else {
+      console.log("Already in room:", contextRoomId);
     }
     
     return () => {
+      console.log("Cleaning up ChatPage, leaving room");
       leaveRoom();
     };
-  }, []);
+  }, [roomId, securityCode, contextRoomId, leaveRoom]);
 
   const handleJoin = (name: string, code: string) => {
     if (!roomId || !name.trim() || !code.trim()) return;
+    
+    console.log("Handling join request:", { roomId, name, code });
     
     joinRoom(roomId, code, name);
     setShowJoinDialog(false);

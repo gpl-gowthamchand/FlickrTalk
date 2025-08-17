@@ -11,6 +11,7 @@ export const useMessages = (roomId: string | null, displayName: string) => {
   // Load previous messages
   const loadMessages = useCallback(async (roomId: string) => {
     try {
+      console.log("Loading messages for room:", roomId);
       const { data, error } = await supabase
         .from("messages")
         .select("*")
@@ -27,6 +28,7 @@ export const useMessages = (roomId: string | null, displayName: string) => {
         return;
       }
       
+      console.log("Loaded messages:", data);
       if (data) {
         const formattedMessages: Message[] = data.map((msg: DbMessage) => ({
           id: msg.id,
@@ -55,6 +57,7 @@ export const useMessages = (roomId: string | null, displayName: string) => {
       timestamp: new Date(),
     };
     
+    // Optimistically add message to UI
     setMessages((prev) => [...prev, newMessage]);
     
     // Store message in the database
@@ -74,15 +77,22 @@ export const useMessages = (roomId: string | null, displayName: string) => {
           title: "Message not sent",
           description: "Could not send message. Please try again.",
         });
+        // Remove the optimistic message if it failed
+        setMessages((prev) => prev.filter(msg => msg.id !== newMessage.id));
+      } else {
+        console.log("Message sent successfully to database");
       }
     } catch (error) {
       console.error("Unexpected error sending message:", error);
+      // Remove the optimistic message if it failed
+      setMessages((prev) => prev.filter(msg => msg.id !== newMessage.id));
     }
   }, [roomId, displayName, toast]);
 
   // Effect to load messages when room changes
   useEffect(() => {
     if (roomId) {
+      console.log("Room changed, loading messages for:", roomId);
       loadMessages(roomId);
     } else {
       setMessages([]);
@@ -93,8 +103,7 @@ export const useMessages = (roomId: string | null, displayName: string) => {
   useEffect(() => {
     if (!roomId) return;
     
-    // Refresh messages when display name changes to update "isMine" property
-    loadMessages(roomId);
+    console.log("Setting up real-time subscription for room:", roomId);
     
     // Subscribe to real-time updates for messages
     const subscription = supabase
@@ -105,6 +114,7 @@ export const useMessages = (roomId: string | null, displayName: string) => {
         table: 'messages',
         filter: `room_id=eq.${roomId}`
       }, (payload) => {
+        console.log("Received real-time message:", payload);
         // Skip messages sent by the current user (already in state)
         if (payload.new && payload.new.sender !== displayName) {
           const newMessage: Message = {
@@ -121,9 +131,10 @@ export const useMessages = (roomId: string | null, displayName: string) => {
       .subscribe();
 
     return () => {
+      console.log("Cleaning up subscription for room:", roomId);
       supabase.removeChannel(subscription);
     };
-  }, [roomId, displayName, loadMessages]);
+  }, [roomId, displayName]);
 
   return {
     messages,

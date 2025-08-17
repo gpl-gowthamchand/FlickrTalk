@@ -10,9 +10,9 @@ export interface Message {
 
 export interface ChatRoom {
   id: string;
-  room_id: string;
-  security_code: string;
+  security_code: string | null;
   created_at: string;
+  last_activity: string;
 }
 
 // Database types for Supabase
@@ -26,7 +26,7 @@ export interface DbMessage {
 
 export interface DbChatRoom {
   id: string;
-  room_id: string;
-  security_code: string;
+  security_code: string | null;
   created_at: string;
+  last_activity: string;
 }
