@@ -30,22 +30,33 @@ export const MessageList = ({ messages }: MessageListProps) => {
           <div
             key={message.id}
             className={`flex flex-col ${
+              message.isSystemMessage ? "items-center" : 
               message.isMine ? "items-end" : "items-start"
             } fade-in`}
           >
-            {!message.isMine && (
-              <span className="text-xs font-medium text-muted-foreground ml-2 mb-1">
-                {message.sender}
-              </span>
-            )}
-            <div
-              className={message.isMine ? "sent-message" : "received-message"}
-            >
-              <div>{message.content}</div>
-              <div className="message-time">
-                {format(message.timestamp, "h:mm a")}
+            {message.isSystemMessage ? (
+              // System message styling (name changes, etc.)
+              <div className="bg-muted/50 text-muted-foreground text-sm px-3 py-2 rounded-full border border-muted">
+                <span className="text-xs">{message.content}</span>
               </div>
-            </div>
+            ) : (
+              // Regular message styling
+              <>
+                {!message.isMine && (
+                  <span className="text-xs font-medium text-muted-foreground ml-2 mb-1">
+                    {message.sender}
+                  </span>
+                )}
+                <div
+                  className={message.isMine ? "sent-message" : "received-message"}
+                >
+                  <div>{message.content}</div>
+                  <div className="message-time">
+                    {format(message.timestamp, "h:mm a")}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         ))
       )}

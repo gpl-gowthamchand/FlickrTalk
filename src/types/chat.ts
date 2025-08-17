@@ -6,6 +6,7 @@ export interface Message {
   isMine: boolean;
   timestamp: Date;
   room_id?: string;
+  isSystemMessage?: boolean;
 }
 
 export interface ChatRoom {
@@ -22,6 +23,7 @@ export interface DbMessage {
   sender: string;
   timestamp: string;
   room_id: string;
+  is_system_message?: boolean;
 }
 
 export interface DbChatRoom {

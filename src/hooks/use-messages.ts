@@ -41,6 +41,7 @@ export const useMessages = (roomId: string | null, displayName: string) => {
           sender: msg.sender,
           isMine: msg.sender === displayName,
           timestamp: new Date(msg.timestamp),
+          isSystemMessage: msg.is_system_message || false,
         }));
         
         console.log("Formatted messages for display:", formattedMessages);
@@ -182,11 +183,12 @@ export const useMessages = (roomId: string | null, displayName: string) => {
             sender: payload.new.sender,
             isMine: payload.new.sender === displayName,
             timestamp: new Date(payload.new.timestamp),
+            isSystemMessage: payload.new.is_system_message || false,
           };
           
           // Only add messages from other users (avoid duplicates)
           if (payload.new.sender !== displayName) {
-            console.log("✅ Adding new message from other user:", newMessage);
+            console.log("Adding new message from other user:", newMessage);
             setMessages((prev) => {
               // Check if message already exists to avoid duplicates
               const exists = prev.some(msg => msg.id === newMessage.id);

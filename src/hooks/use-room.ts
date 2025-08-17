@@ -9,8 +9,48 @@ export const useRoom = () => {
   const [roomId, setRoomId] = useState<string | null>(null);
   const [securityCode, setSecurityCode] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState("");
+  const [previousDisplayName, setPreviousDisplayName] = useState(""); // Track previous name for notifications
   const { connectToRoom, disconnectFromRoom } = useSocket();
   const { toast } = useToast();
+
+  // Update display name with notification to other users
+  const updateDisplayName = (newName: string) => {
+    if (newName.trim() && newName !== displayName) {
+      const oldName = displayName;
+      setPreviousDisplayName(oldName);
+      setDisplayName(newName);
+      
+      // If we're in a room, notify other users about the name change
+      if (roomId && oldName) {
+        notifyNameChange(oldName, newName);
+      }
+    }
+  };
+
+  // Notify other users about name change
+  const notifyNameChange = async (oldName: string, newName: string) => {
+    if (!roomId) return;
+    
+    try {
+      // Send a system message about the name change
+      const { error } = await supabase
+        .from("messages")
+        .insert({
+          room_id: roomId,
+          content: `**${oldName}** changed their name to **${newName}**`,
+          sender: "System",
+          is_system_message: true
+        });
+        
+      if (error) {
+        console.error("Error sending name change notification:", error);
+      } else {
+        console.log("Name change notification sent:", { oldName, newName });
+      }
+    } catch (error) {
+      console.error("Failed to send name change notification:", error);
+    }
+  };
 
   // Create a new chat room
   const createRoom = async () => {
@@ -120,7 +160,8 @@ export const useRoom = () => {
     roomId,
     securityCode,
     displayName,
-    setDisplayName,
+    setDisplayName: updateDisplayName, // Use the new function instead of setState directly
+    previousDisplayName,
     createRoom,
     joinRoom,
     leaveRoom,
