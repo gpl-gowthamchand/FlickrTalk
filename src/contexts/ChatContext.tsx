@@ -12,7 +12,7 @@ interface ChatContextType {
   roomId: string | null;
   securityCode: string | null;
   createRoom: () => Promise<{ roomId: string; securityCode: string }>;
-  joinRoom: (roomId: string, securityCode: string, displayName: string) => void;
+  joinRoom: (roomId: string, securityCode: string, displayName: string) => Promise<boolean>;
   leaveRoom: () => void;
 }
 
@@ -24,7 +24,7 @@ const ChatContext = createContext<ChatContextType>({
   roomId: null,
   securityCode: null,
   createRoom: async () => ({ roomId: "", securityCode: "" }),
-  joinRoom: () => {},
+  joinRoom: async () => false,
   leaveRoom: () => {},
 });
 

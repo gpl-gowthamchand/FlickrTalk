@@ -59,16 +59,30 @@ const Index = () => {
     }
   };
 
-  const handleContinueToCreatedRoom = () => {
+  const handleContinueToCreatedRoom = async () => {
     if (!createdRoomData || !createName.trim()) return;
-    joinRoom(createdRoomData.roomId, createdRoomData.securityCode, createName);
-    navigate(`/chat/${createdRoomData.roomId}`);
+    
+    try {
+      // Join the room first
+      await joinRoom(createdRoomData.roomId, createdRoomData.securityCode, createName);
+      // Then navigate after the room is joined
+      navigate(`/chat/${createdRoomData.roomId}`);
+    } catch (error) {
+      console.error("Error joining created room:", error);
+    }
   };
 
-  const handleJoinRoom = () => {
+  const handleJoinRoom = async () => {
     if (!joinName.trim() || !joinRoomId.trim() || !joinSecurityCode.trim()) return;
-    joinRoom(joinRoomId, joinSecurityCode, joinName);
-    navigate(`/chat/${joinRoomId}`);
+    
+    try {
+      // Join the room first
+      await joinRoom(joinRoomId, joinSecurityCode, joinName);
+      // Then navigate after the room is joined
+      navigate(`/chat/${joinRoomId}`);
+    } catch (error) {
+      console.error("Error joining room:", error);
+    }
   };
 
   const handleCopyLink = () => {

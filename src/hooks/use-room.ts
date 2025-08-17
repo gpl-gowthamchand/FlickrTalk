@@ -67,50 +67,46 @@ export const useRoom = () => {
   };
 
   // Join a chat room
-  const joinRoom = (roomId: string, securityCode: string, name: string) => {
+  const joinRoom = async (roomId: string, securityCode: string, name: string) => {
     console.log("Joining room:", { roomId, securityCode, name });
     
     // Verify the room exists and security code is correct
-    const verifyRoom = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("chat_rooms")
-          .select("*")
-          .eq("id", roomId)
-          .eq("security_code", securityCode)
-          .single();
-          
-        if (error || !data) {
-          console.error("Room verification failed:", error);
-          toast({
-            variant: "destructive",
-            title: "Invalid Room",
-            description: "Room ID or security code is incorrect.",
-          });
-          return false;
-        }
+    try {
+      const { data, error } = await supabase
+        .from("chat_rooms")
+        .select("*")
+        .eq("id", roomId)
+        .eq("security_code", securityCode)
+        .single();
         
-        console.log("Room verified successfully:", data);
-        return true;
-      } catch (error) {
-        console.error("Error verifying room:", error);
-        return false;
-      }
-    };
-    
-    verifyRoom().then((isValid) => {
-      if (isValid) {
-        setDisplayName(name);
-        setRoomId(roomId);
-        setSecurityCode(securityCode);
-        connectToRoom(roomId, securityCode, name);
-        
+      if (error || !data) {
+        console.error("Room verification failed:", error);
         toast({
-          title: "Room Joined",
-          description: `Welcome to the chat room!`,
+          variant: "destructive",
+          title: "Invalid Room",
+          description: "Room ID or security code is incorrect.",
         });
+        throw new Error("Invalid room or security code");
       }
-    });
+      
+      console.log("Room verified successfully:", data);
+      
+      // Set the room context
+      setDisplayName(name);
+      setRoomId(roomId);
+      setSecurityCode(securityCode);
+      connectToRoom(roomId, securityCode, name);
+      
+      toast({
+        title: "Room Joined",
+        description: `Welcome to the chat room!`,
+      });
+      
+      return true;
+    } catch (error) {
+      console.error("Error joining room:", error);
+      throw error;
+    }
   };
   
   // Leave the current room

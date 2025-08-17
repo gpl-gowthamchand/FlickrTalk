@@ -27,15 +27,27 @@ const ChatPage = () => {
   useEffect(() => {
     console.log("ChatPage useEffect - roomId:", roomId, "securityCode:", securityCode, "contextRoomId:", contextRoomId);
     
-    // Auto-join if we have URL parameters
-    if (roomId && securityCode && !contextRoomId) {
-      console.log("Auto-joining room with URL parameters");
+    // If we already have a room context and it matches the URL, we're good
+    if (contextRoomId && contextRoomId === roomId) {
+      console.log("Already in the correct room:", contextRoomId);
+      setShowJoinDialog(false);
+      return;
+    }
+    
+    // If we have URL parameters but no matching room context, show join dialog
+    if (roomId && securityCode && (!contextRoomId || contextRoomId !== roomId)) {
+      console.log("Need to join room with URL parameters");
       setShowJoinDialog(true);
-    } else if (!contextRoomId) {
-      console.log("No room context, showing join dialog");
+    } 
+    // If we have a room context but it doesn't match the URL, we need to rejoin
+    else if (contextRoomId && contextRoomId !== roomId) {
+      console.log("Room context mismatch, need to rejoin");
       setShowJoinDialog(true);
-    } else {
-      console.log("Already in room:", contextRoomId);
+    }
+    // If no room context and no URL parameters, show join dialog
+    else if (!contextRoomId && !roomId) {
+      console.log("No room context or URL, showing join dialog");
+      setShowJoinDialog(true);
     }
     
     return () => {
